@@ -33,12 +33,12 @@
 
 <style>
     .header-overlay {
-        background: rgba(0, 0, 0, 0.3); /* طبقة شفافة */
+        background: rgba(0, 0, 0, 0.3); 
         min-height: 100vh;
     }
     
     .header-box {
-        background: rgba(0, 0, 0, 0.1); /* خلفية داكنة للبوكس */
+        background: rgba(0, 0, 0, 0.1);
         border-radius: 10px;
         padding: 30px;
         max-width: 100%;

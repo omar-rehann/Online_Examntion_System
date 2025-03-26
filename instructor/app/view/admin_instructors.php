@@ -83,19 +83,19 @@ $_admin = new admin();
 				<form id="addInstructorForm" action="app/controller/instructor.inc.php?action=manualinsert" method="post">
 						<div class="form-group">
 							<label for="name" class="col-form-label">Full Name:</label>
-							<input type="text" class="form-control" id="name" name="name">
+							<input type="text" class="form-control" id="name" name="name" placeholder="Enter Name">
 						</div>
 						<div class="form-group">
 							<label for="email" class="col-form-label">Email Address:</label>
-							<input type="email" class="form-control" id="email" name="email">
+							<input type="email" class="form-control" id="email" name="email" placeholder="Enter Email">
 						</div>
 						<div class="form-group">
 							<label for="phone" class="col-form-label">Phone Number:</label>
-							<input type="number" class="form-control" id="phone" name="phone">
+							<input type="number" class="form-control" id="phone" name="phone" placeholder="Enter Phone Number">
 						</div>
 						<div class="form-group">
 							<label for="password" class="col-form-label">Password:</label>
-							<input type="password" class="form-control" id="password" name="password">
+							<input type="password" class="form-control" id="password" name="password" placeholder="Enter Password">
 						</div>
 				</form>
 			</div>

@@ -61,11 +61,11 @@ header('Location: ' . $_SERVER['HTTP_REFERER']);
   fclose($fp);
 
 
-}elseif (isset($_GET['importStudents'])){
+}elseif (isset($_GET['importStudents'])) {
   $excelFile = $_FILES['excel']['tmp_name'];
   $inputFileType = 'Xlsx';
-  class MyReadFilter implements \PhpOffice\PhpSpreadsheet\Reader\IReadFilter
-  {
+
+  class MyReadFilter implements \PhpOffice\PhpSpreadsheet\Reader\IReadFilter {
       private $startRow = 0;
       private $endRow   = 0;
       private $columns  = [];
@@ -78,35 +78,49 @@ header('Location: ' . $_SERVER['HTTP_REFERER']);
 
       public function readCell($column, $row, $worksheetName = '') {
           if ($row >= $this->startRow && $row <= $this->endRow) {
-              if (in_array($column,$this->columns)) {
+              if (in_array($column, $this->columns)) {
                   return true;
               }
           }
           return false;
       }
   }
-  $filterSubset = new MyReadFilter(2,1000,range('A','B'));
+
+  // تحديد الأعمدة المطلوبة
+  $filterSubset = new MyReadFilter(2, 1000, range('A', 'E'));
   $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader($inputFileType);
   $reader->setReadFilter($filterSubset);
   $spreadsheet = $reader->load($excelFile);
   $sheetData = $spreadsheet->getActiveSheet()->toArray(null, true, true, true);
-  $sheetData = array_filter($sheetData, function($v) { return implode('', $v) !== ''; });
-  foreach($sheetData as $row){
-    $id = is_numeric($row['A']) ? $row['A'] : 0;
-    $name = (strlen($row['B']) > 10? $row['B'] : null);
-    $students[] = '('. $id . ',"' . $name . '")';
-    $values = implode(', ', $students);
-  }
-  if(!empty($values)){
-         $_admin = new admin();
-         $_admin->importStudents($values);
-         header('Location: ../../?students&succImp=1');
-         exit;
-       }
-    header('Location: ../../?students&succImp=0');
-  exit;
+  $sheetData = array_filter($sheetData, function ($v) {
+      return implode('', $v) !== '';
+  });
 
-}
-}else{
+  $students = [];
+
+  foreach ($sheetData as $row) {
+      $id = is_numeric($row['A']) ? $row['A'] : 0;
+      $name = (strlen($row['B']) > 2 ? $row['B'] : null);
+      $email = filter_var($row['C'], FILTER_VALIDATE_EMAIL) ? $row['C'] : null;
+      $phone = preg_match('/^\+?[0-9]{10,15}$/', $row['D']) ? $row['D'] : null;
+      $password = !empty($row['E']) ? password_hash($row['E'], PASSWORD_BCRYPT) : null;
+
+      if ($id && $name && $email && $phone && $password) {
+          $students[] = "($id, \"$name\", \"$email\", \"$phone\", \"$password\")";
+      }
+  }
+
+  if (!empty($students)) {
+      $values = implode(', ', $students);
+      $_admin = new admin();
+      $_admin->importStudents($values);
+      header('Location: ../../?students&succImp=1');
+      exit;
+  }
+
+  header('Location: ../../?students&succImp=0');
+  exit;
+} else {
   header('Location: /');
+}
 }

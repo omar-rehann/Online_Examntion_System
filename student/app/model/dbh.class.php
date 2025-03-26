@@ -4,7 +4,7 @@ class dbh {
   private $username = "root";
   private $pwd = "";
   private $dbName = "final";
-  private $port = "3307"; // تأكد من إضافة المنفذ
+  private $port = "3306"; // تأكد من إضافة المنفذ
 
   public function connect(){
     $conn = 'mysql:host=' . $this->host . ';port=' . $this->port . ';dbname=' . $this->dbName;

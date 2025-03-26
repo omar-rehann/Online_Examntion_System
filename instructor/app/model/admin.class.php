@@ -61,7 +61,7 @@ class admin extends dbh{
   public function importStudents($values)
   {
       try {
-          $sql = "INSERT IGNORE student(id,name) VALUES " . $values;
+          $sql = "INSERT IGNORE student(id,name,email,phone,password) VALUES " . $values;
           $stmt = $this->connect()->prepare($sql);
           $stmt->execute();
           return true;

@@ -19,7 +19,9 @@
                     <a class="nav-link" href="?profile"><h6><i class="fa fa-user" aria-hidden="true"></i> Profile</h6></a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="?logout"><h6><i class="fa fa-sign-out" aria-hidden="true"></i> Logout</h6></a>
+                            <a class="nav-link" href="logout.php">
+                <h6><i class="fa fa-sign-out" aria-hidden="true"></i> Logout</h6>
+            </a>
                 </li>
             </ul>
         </div>

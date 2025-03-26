@@ -157,7 +157,7 @@ if(isset($_GET['succImp']) and $_GET['succImp'] == 1){ ?>
 						</div>
 						<div class="form-group">
 							<label for="phone" class="col-form-label">Phone Number:</label>
-							<input type="number" class="form-control" id="phone" name="phone">
+							<input type="number" class="form-control" id="phone" name="phone" placeholder="Enter phone Number">
 						</div>
 						<div class="form-group">
 							<label for="password" class="col-form-label">Password:</label>

@@ -1,3 +1,4 @@
+
 <?php
 session_start();
 include_once 'autoloader.inc.php';
@@ -213,6 +214,104 @@ if (isset($_GET['uploadImage'])) {
       $writer->save('php://output');
       exit;
 
+} elseif (isset($_GET['import']) and !empty($_FILES)) {
+  $excelFile = $_FILES['excel']['tmp_name'];
+  $inputFileType = 'Xlsx';
+  $course = $_POST['course'];
+
+  class MyReadFilter implements \PhpOffice\PhpSpreadsheet\Reader\IReadFilter
+  {
+      private $startRow = 0;
+      private $endRow   = 0;
+      private $columns  = [];
+
+      public function __construct($startRow, $endRow, $columns) {
+          $this->startRow = $startRow;
+          $this->endRow   = $endRow;
+          $this->columns  = $columns;
+      }
+
+      public function readCell($column, $row, $worksheetName = '') {
+          if ($row >= $this->startRow && $row <= $this->endRow) {
+              if (in_array($column,$this->columns)) {
+                  return true;
+              }
+          }
+          return false;
+      }
+  }
+  $filterSubset = new MyReadFilter(14,1000,range('A','H'));
+  $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader($inputFileType);
+  $reader->setReadFilter($filterSubset);
+  $spreadsheet = $reader->load($excelFile);
+  $sheetData = $spreadsheet->getActiveSheet()->toArray(null, true, true, true);
+  $sheetData = array_filter($sheetData, function($v) { return implode('', $v) !== ''; });
+  $q = new question();
+  $qTypes = ['Multiple Choise'=>0,'True/False'=>1,'Complete'=>2,'Multiple Select'=>3,'Matching'=>4,'Essay'=>5];
+  foreach($sheetData as $row){
+    if(in_array($row['B'],$qTypes) && !empty($row['A']) && is_numeric($row['C']) && strlen($row['A']) > 6){
+      if($qTypes[$row['B']] == 3 || $qTypes[$row['B']] == 0){
+        $q->insertQuestion($row['A'],$qTypes[$row['B']],$course,0,$row['C'],$row['D']);
+        if(!empty($row['E'])){
+          $isCorrect = (correctAnswer($row['E'])) ? 1:0;
+          $answer = (correctAnswer($row['E']) ? substr($row['E'], 2):$row['E']);
+          $q->insertAnswersToLast($answer,$isCorrect);
+        }
+        if(!empty($row['F'])){
+          $isCorrect = (correctAnswer($row['F'])) ? 1:0;
+          $answer = (correctAnswer($row['F']) ? substr($row['F'], 2):$row['F']);
+          $q->insertAnswersToLast($answer,$isCorrect);
+        }
+        if(!empty($row['G'])){
+          $isCorrect = (correctAnswer($row['G'])) ? 1:0;
+          $answer = (correctAnswer($row['G']) ? substr($row['G'], 2):$row['G']);
+          $q->insertAnswersToLast($answer,$isCorrect);
+        }
+        if(!empty($row['H'])){
+          $isCorrect = (correctAnswer($row['H'])) ? 1:0;
+          $answer = (correctAnswer($row['H']) ? substr($row['H'], 2):$row['H']);
+          $q->insertAnswersToLast($answer,$isCorrect);
+        }
+      }elseif($qTypes[$row['B']] == 4){
+        $q->insertQuestion($row['A'],$qTypes[$row['B']],$course,0,$row['C'],$row['D']);
+        if(!empty($row['E'])){
+          $answer = explode('>>', $row['E']);
+          if(!empty($answer[0]) and !empty($answer[1]))
+          $q->insertAnswersToLast($answer[0],1,$answer[1]);
+        }
+        if(!empty($row['F'])){
+          $answer = explode('>>', $row['F']);
+          if(!empty($answer[0]) and !empty($answer[1]))
+          $q->insertAnswersToLast($answer[0],1,$answer[1]);
+        }
+        if(!empty($row['G'])){
+          $answer = explode('>>', $row['G']);
+          if(!empty($answer[0]) and !empty($answer[1]))
+          $q->insertAnswersToLast($answer[0],1,$answer[1]);
+        }
+        if(!empty($row['H'])){
+          $answer = explode('>>', $row['H']);
+          if(!empty($answer[0]) and !empty($answer[1]))
+          $q->insertAnswersToLast($answer[0],1,$answer[1]);
+        }
+
+      }elseif($qTypes[$row['B']] == 1){
+        $isCorrect = ($row['E'] == 'True') ? 1:0;
+        $q->insertQuestion($row['A'],1,$course,$isCorrect,$row['C'],$row['D']);
+
+      }elseif($qTypes[$row['B']] == 5){
+        $q->insertQuestion($row['A'],5,$course,$isCorrect,$row['C'],$row['D']);
+
+      }elseif($qTypes[$row['B']] == 2){
+        $q->insertQuestion($row['A'],2,$course,0,$row['C'],$row['D']);
+        if(!empty($row['E'])){$q->insertAnswersToLast($row['E'],null);}
+        if(!empty($row['F'])){$q->insertAnswersToLast($row['F'],null);}
+        if(!empty($row['G'])){$q->insertAnswersToLast($row['G'],null);}
+        if(!empty($row['H'])){$q->insertAnswersToLast($row['H'],null);}
+      }
+    }
+  }
+  header('Location: ../../?questions');
 }else{
   http_response_code(404);
 }

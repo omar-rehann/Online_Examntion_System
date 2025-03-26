@@ -36,12 +36,12 @@ require_once 'header.php';
 
 		<form class="sign-in-htm" id="loginForm" action="app/controller/student.inc.php?action=login" method="post">
 			<div class="group">
-				<label for="id" class="label">Academic ID</label>
+				<label for="id" class="label">Student  ID</label>
 				<input type="text" name="id" class="input input-holder" title="Please Enter Your Real Student ID" placeholder="20*******"  required pattern="\b20\w[0-9]*">
 			</div>
 			<div class="group">
 				<label for="password" class="label">Password</label>
-				<input type="password" name="password" class="input input-holder" placeholder="">
+				<input type="password" name="password" class="input input-holder" placeholder="Enter Password">
 			</div>
 			<div class="group">
 				<input type="submit" class="button" value="Sign In">

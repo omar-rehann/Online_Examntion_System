@@ -1,6 +1,6 @@
 <?php
 require_once 'dbh.class.php';
-// require_once $_SERVER['DOCUMENT_ROOT'] . '/student/app/controller/function.php';
+//require_once $_SERVER['DOCUMENT_ROOT'] . '/student/app/controller/function.php';
 //include_once '../student/app/contoller/function.php';
 
 class test extends dbh{
