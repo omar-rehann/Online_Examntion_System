@@ -2,9 +2,10 @@
 class dbh {
   private $host = "localhost";
   private $username = "root";
+  private $port = "3306";
+
   private $pwd = "";
   private $dbName = "final";
-  private $port = "3306"; // تأكد من إضافة المنفذ
 
   public function connect(){
     $conn = 'mysql:host=' . $this->host . ';port=' . $this->port . ';dbname=' . $this->dbName;

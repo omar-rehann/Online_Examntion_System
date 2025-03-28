@@ -2,6 +2,13 @@
 <?php
 session_start();
 include_once 'autoloader.inc.php';
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+
+
+
 
 if (isset($_GET['uploadImage'])) {
   $up = uploadFile($_FILES['file']['tmp_name']);
@@ -134,184 +141,215 @@ if (isset($_GET['uploadImage'])) {
         $q->duplicateQuestion($id);
         $newID = $q->getLastQuestion()->id;
         header('Location:../../?questions=view&id='. $newID);
-}elseif (isset($_GET['export'])) {
-      $q = new question;
-      $course = $_POST['course'];
+}else if (isset($_GET['export'])) {
+    try {
+        ob_end_clean(); // Clear any previous output
 
-      $questions = $q->getByCourse($course);
-      $crs = $questions[0]->course;
-      $qr = [];
-      $qTypes = [0=>'Multiple Choise',1=>'True/False',2=>'Complete',3=>'Multiple Select',4=>'Matching',5=>'Essay'];
-      foreach($questions as $question){
-        $id = $question->id;
-        $quest = str_replace("&nbsp;", '', strip_tags($question->question));
-        $type = $question->type;
-        $difficulty = $question->difficulty;
-        $typetext = $qTypes[$question->type];
-        $points = $question->points;
-        $isTrue = $question->isTrue;
-        if($type == 0 || $type == 3){
-          $answers = $q->getQuestionAnswers($id);
-          $ans1 = (!empty($answers[0]->answer))?(($answers[0]->isCorrect)?('#!'. str_replace("&nbsp;", '', strip_tags($answers[0]->answer))):str_replace("&nbsp;", '', strip_tags($answers[0]->answer))):'';
-          $ans2 = (!empty($answers[1]->answer))?(($answers[1]->isCorrect)?('#!'. str_replace("&nbsp;", '', strip_tags($answers[1]->answer))):str_replace("&nbsp;", '', strip_tags($answers[1]->answer))):'';
-          $ans3 = (!empty($answers[2]->answer))?(($answers[2]->isCorrect)?('#!'. str_replace("&nbsp;", '', strip_tags($answers[2]->answer))):str_replace("&nbsp;", '', strip_tags($answers[2]->answer))):'';
-          $ans4 = (!empty($answers[3]->answer))?(($answers[3]->isCorrect)?('#!'. str_replace("&nbsp;", '', strip_tags($answers[3]->answer))):str_replace("&nbsp;", '', strip_tags($answers[3]->answer))):'';
-          array_push($qr,[$quest,$typetext,$points,$difficulty,$ans1,$ans2,$ans3,$ans4]);
-        }elseif($type == 4){
-          $answers = $q->getQuestionAnswers($id);
-          $ans1 = (!empty($answers[0]->answer)?($answers[0]->answer . '>>'. $answers[0]->matchAnswer):'');
-          $ans2 = (!empty($answers[1]->answer)?($answers[1]->answer . '>>'. $answers[1]->matchAnswer):'');
-          $ans3 = (!empty($answers[2]->answer)?($answers[2]->answer . '>>'. $answers[2]->matchAnswer):'');
-          $ans4 = (!empty($answers[3]->answer)?($answers[3]->answer . '>>'. $answers[3]->matchAnswer):'');
-          array_push($qr,[$quest,$typetext,$points,$difficulty,$ans1,$ans2,$ans3,$ans4]);
-        }elseif($type == 1){
-          $answer = (($isTrue == 1)?'True':'False');
-          array_push($qr,[$quest,$typetext,$points,$difficulty,$answer,'','','']);
-        }elseif($type == 2){
-          $answers = $q->getQuestionAnswers($id);
-          $ans1 = (!empty($answers[0]->answer))?$answers[0]->answer:'';
-          $ans2 = (!empty($answers[1]->answer))?$answers[1]->answer:'';
-          $ans3 = (!empty($answers[2]->answer))?$answers[2]->answer:'';
-          $ans4 = (!empty($answers[3]->answer))?$answers[3]->answer:'';
-          array_push($qr,[$quest,$typetext,$points,$difficulty,$ans1,$ans2,$ans3,$ans4]);
-        }elseif($type == 5){
-          $answers = $q->getQuestionAnswers($id);
-          array_push($qr,[$quest,$typetext,$points,$difficulty,'','','','']);
-        }
-      }
-      $spreadsheet = PhpOffice\PhpSpreadsheet\IOFactory::load('../../questionsTemplate.xlsx');
-
-      $baseRow = 14;
-      foreach ($qr as $r => $dataRow) {
-          $row = $baseRow + $r;
-          $spreadsheet->getActiveSheet()->insertNewRowBefore($row, 1);
-
-          $spreadsheet->getActiveSheet()->setCellValue('A' . $row, $dataRow[0])
-              ->setCellValue('B' . $row, $dataRow[1])
-              ->setCellValue('C' . $row, $dataRow[2])
-              ->setCellValue('D' . $row, $dataRow[3])
-              ->setCellValue('E' . $row, $dataRow[4])
-              ->setCellValue('F' . $row, $dataRow[5])
-              ->setCellValue('G' . $row, $dataRow[6])
-              ->setCellValue('H' . $row, $dataRow[7]);
-          $spreadsheet->getActiveSheet()->getStyle('B' . $row)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_NONE);
-          $spreadsheet->getActiveSheet()->getStyle('C' . $row)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_NONE);
-          $spreadsheet->getActiveSheet()->getStyle('D' . $row)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_NONE);
-      }
-      $spreadsheet->setActiveSheetIndex(0);
-
-      header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-      header('Content-Disposition: attachment;filename="'. $crs .'_Questions.xlsx"');
-      header('Cache-Control: max-age=0');
-      header('Cache-Control: max-age=1');
-
-      header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
-      header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
-      header('Cache-Control: cache, must-revalidate');
-      header('Pragma: public');
-
-      $writer = PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Xlsx');
-      $writer->save('php://output');
-      exit;
-
-} elseif (isset($_GET['import']) and !empty($_FILES)) {
-  $excelFile = $_FILES['excel']['tmp_name'];
-  $inputFileType = 'Xlsx';
-  $course = $_POST['course'];
-
-  class MyReadFilter implements \PhpOffice\PhpSpreadsheet\Reader\IReadFilter
-  {
-      private $startRow = 0;
-      private $endRow   = 0;
-      private $columns  = [];
-
-      public function __construct($startRow, $endRow, $columns) {
-          $this->startRow = $startRow;
-          $this->endRow   = $endRow;
-          $this->columns  = $columns;
-      }
-
-      public function readCell($column, $row, $worksheetName = '') {
-          if ($row >= $this->startRow && $row <= $this->endRow) {
-              if (in_array($column,$this->columns)) {
-                  return true;
-              }
-          }
-          return false;
-      }
-  }
-  $filterSubset = new MyReadFilter(14,1000,range('A','H'));
-  $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader($inputFileType);
-  $reader->setReadFilter($filterSubset);
-  $spreadsheet = $reader->load($excelFile);
-  $sheetData = $spreadsheet->getActiveSheet()->toArray(null, true, true, true);
-  $sheetData = array_filter($sheetData, function($v) { return implode('', $v) !== ''; });
-  $q = new question();
-  $qTypes = ['Multiple Choise'=>0,'True/False'=>1,'Complete'=>2,'Multiple Select'=>3,'Matching'=>4,'Essay'=>5];
-  foreach($sheetData as $row){
-    if(in_array($row['B'],$qTypes) && !empty($row['A']) && is_numeric($row['C']) && strlen($row['A']) > 6){
-      if($qTypes[$row['B']] == 3 || $qTypes[$row['B']] == 0){
-        $q->insertQuestion($row['A'],$qTypes[$row['B']],$course,0,$row['C'],$row['D']);
-        if(!empty($row['E'])){
-          $isCorrect = (correctAnswer($row['E'])) ? 1:0;
-          $answer = (correctAnswer($row['E']) ? substr($row['E'], 2):$row['E']);
-          $q->insertAnswersToLast($answer,$isCorrect);
-        }
-        if(!empty($row['F'])){
-          $isCorrect = (correctAnswer($row['F'])) ? 1:0;
-          $answer = (correctAnswer($row['F']) ? substr($row['F'], 2):$row['F']);
-          $q->insertAnswersToLast($answer,$isCorrect);
-        }
-        if(!empty($row['G'])){
-          $isCorrect = (correctAnswer($row['G'])) ? 1:0;
-          $answer = (correctAnswer($row['G']) ? substr($row['G'], 2):$row['G']);
-          $q->insertAnswersToLast($answer,$isCorrect);
-        }
-        if(!empty($row['H'])){
-          $isCorrect = (correctAnswer($row['H'])) ? 1:0;
-          $answer = (correctAnswer($row['H']) ? substr($row['H'], 2):$row['H']);
-          $q->insertAnswersToLast($answer,$isCorrect);
-        }
-      }elseif($qTypes[$row['B']] == 4){
-        $q->insertQuestion($row['A'],$qTypes[$row['B']],$course,0,$row['C'],$row['D']);
-        if(!empty($row['E'])){
-          $answer = explode('>>', $row['E']);
-          if(!empty($answer[0]) and !empty($answer[1]))
-          $q->insertAnswersToLast($answer[0],1,$answer[1]);
-        }
-        if(!empty($row['F'])){
-          $answer = explode('>>', $row['F']);
-          if(!empty($answer[0]) and !empty($answer[1]))
-          $q->insertAnswersToLast($answer[0],1,$answer[1]);
-        }
-        if(!empty($row['G'])){
-          $answer = explode('>>', $row['G']);
-          if(!empty($answer[0]) and !empty($answer[1]))
-          $q->insertAnswersToLast($answer[0],1,$answer[1]);
-        }
-        if(!empty($row['H'])){
-          $answer = explode('>>', $row['H']);
-          if(!empty($answer[0]) and !empty($answer[1]))
-          $q->insertAnswersToLast($answer[0],1,$answer[1]);
+        // Check if the course name is provided
+        if (!isset($_POST['course']) || empty($_POST['course'])) {
+            throw new Exception("Course not specified.");
         }
 
-      }elseif($qTypes[$row['B']] == 1){
-        $isCorrect = ($row['E'] == 'True') ? 1:0;
-        $q->insertQuestion($row['A'],1,$course,$isCorrect,$row['C'],$row['D']);
+        $course = $_POST['course'];
+        $q = new question; 
+        $questions = $q->getByCourse($course);
 
-      }elseif($qTypes[$row['B']] == 5){
-        $q->insertQuestion($row['A'],5,$course,$isCorrect,$row['C'],$row['D']);
+        if (empty($questions)) {
+            throw new Exception("No questions found for this course.");
+        }
 
-      }elseif($qTypes[$row['B']] == 2){
-        $q->insertQuestion($row['A'],2,$course,0,$row['C'],$row['D']);
-        if(!empty($row['E'])){$q->insertAnswersToLast($row['E'],null);}
-        if(!empty($row['F'])){$q->insertAnswersToLast($row['F'],null);}
-        if(!empty($row['G'])){$q->insertAnswersToLast($row['G'],null);}
-        if(!empty($row['H'])){$q->insertAnswersToLast($row['H'],null);}
-      }
+        $qTypes = [
+            0 => 'Multiple Choice', 1 => 'True/False', 2 => 'Complete',
+            3 => 'Multiple Select', 4 => 'Matching', 5 => 'Essay'
+        ];
+
+        $data = [];
+        foreach ($questions as $question) {
+            $id = $question->id;
+            $quest = strip_tags($question->question);
+            $type = $question->type;
+            $difficulty = $question->difficulty;
+            $typetext = $qTypes[$type];
+            $points = $question->points;
+            $isTrue = $question->isTrue;
+
+            $answers = $q->getQuestionAnswers($id);
+            $ans1 = $answers[0]->answer ?? '';
+            $ans2 = $answers[1]->answer ?? '';
+            $ans3 = $answers[2]->answer ?? '';
+            $ans4 = $answers[3]->answer ?? '';
+
+            if ($type == 0 || $type == 3) { // Multiple Choice & Multiple Select
+                $ans1 = ($answers[0]->isCorrect ?? false) ? "#!$ans1" : $ans1;
+                $ans2 = ($answers[1]->isCorrect ?? false) ? "#!$ans2" : $ans2;
+                $ans3 = ($answers[2]->isCorrect ?? false) ? "#!$ans3" : $ans3;
+                $ans4 = ($answers[3]->isCorrect ?? false) ? "#!$ans4" : $ans4;
+            } elseif ($type == 4) { // Matching
+                $ans1 = isset($answers[0]) ? "{$answers[0]->answer} >> {$answers[0]->matchAnswer}" : '';
+                $ans2 = isset($answers[1]) ? "{$answers[1]->answer} >> {$answers[1]->matchAnswer}" : '';
+                $ans3 = isset($answers[2]) ? "{$answers[2]->answer} >> {$answers[2]->matchAnswer}" : '';
+                $ans4 = isset($answers[3]) ? "{$answers[3]->answer} >> {$answers[3]->matchAnswer}" : '';
+            } elseif ($type == 1) { // True/False
+                $ans1 = ($isTrue == 1) ? 'True' : 'False';
+                $ans2 = $ans3 = $ans4 = '';
+            } elseif ($type == 5) { // Essay
+                $ans1 = $ans2 = $ans3 = $ans4 = '';
+            }
+
+            $data[] = [$quest, $typetext, $points, $difficulty, $ans1, $ans2, $ans3, $ans4];
+        }
+
+        // Create a new Excel file
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Add headers
+        $headers = ['Question', 'Question Type', 'Points', 'Difficulty', 'Answer 1', 'Answer 2', 'Answer 3', 'Answer 4'];
+        $col = 'A';
+        foreach ($headers as $header) {
+            $sheet->setCellValue($col . '1', $header);
+            $col++;
+        }
+
+        // Style headers
+        $headerStyle = [
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+            'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => '4472C4']]
+        ];
+        $sheet->getStyle('A1:H1')->applyFromArray($headerStyle);
+
+        // Add data
+        $row = 2;
+        foreach ($data as $dataRow) {
+            $col = 'A';
+            foreach ($dataRow as $cell) {
+                $sheet->setCellValue($col . $row, $cell);
+                $col++;
+            }
+
+            // Alternate row styling
+            if ($row % 2 == 0) {
+                $sheet->getStyle("A$row:H$row")->getFill()
+                    ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                    ->getStartColor()->setRGB('E9E9E9');
+            }
+            $row++;
+        }
+
+        // Auto-size columns
+        foreach (range('A', 'H') as $column) {
+            $sheet->getColumnDimension($column)->setAutoSize(true);
+        }
+
+        // Prepare the file for download
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="' . $course . '_Questions.xlsx"');
+        header('Cache-Control: max-age=0');
+
+        $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
+        $writer->save('php://output');
+        exit;
+
+    } catch (Exception $e) {
+        die("An error occurred: " . $e->getMessage());
     }
-  }
-  header('Location: ../../?questions');
-}else{
-  http_response_code(404);
+}else if (isset($_GET['import']) && !empty($_FILES)) {
+    if (!isset($_FILES['excel']['tmp_name']) || empty($_FILES['excel']['tmp_name'])) {
+        die("Error: No file uploaded!");
+    }
+
+    $excelFile = $_FILES['excel']['tmp_name'];
+
+    if (!file_exists($excelFile)) {
+        die("Error: File not found on the server!");
+    }
+    if (!is_readable($excelFile)) {
+        die("Error: File exists but cannot be read!");
+    }
+
+    try {
+        $reader = IOFactory::createReaderForFile($excelFile);
+        $spreadsheet = $reader->load($excelFile);
+
+        $sheetData = $spreadsheet->getActiveSheet()->toArray(null, true, true, true);
+
+        if (empty($sheetData)) {
+            die("Error: Excel file is empty!");
+        }
+
+        require_once '../model/question.class.php';
+        if (!class_exists('question')) {
+            die("Error: Question class not found!");
+        }
+
+        $q = new question();
+        $course = $_POST['course'] ?? null;
+
+        if (!$course) {
+            die("Error: Course not specified!");
+        }
+
+        $qTypes = ['Multiple Choise' => 0, 'True/False' => 1, 'Complete' => 2, 'Multiple Select' => 3, 'Matching' => 4, 'Essay' => 5];
+
+        foreach ($sheetData as $rowIndex => $row) {
+            if ($rowIndex < 14) continue;
+
+            $questionText = trim($row['A'] ?? '');
+            $questionTypeText = trim($row['B'] ?? '');
+            $points = trim($row['C'] ?? 0);
+            $difficulty = trim($row['D'] ?? 1);
+
+            if (!$questionText || !isset($qTypes[$questionTypeText])) {
+                continue;
+            }
+
+            $qtype = $qTypes[$questionTypeText];
+
+            $q->insertQuestion($questionText, $qtype, $course, 0, $points, $difficulty);
+            $lastInsertedId = $q->getLastQuestion()->id;
+
+            if ($qtype == 0 || $qtype == 3) {
+                for ($i = 'E'; $i <= 'H'; $i++) {
+                    $answerText = trim($row[$i] ?? '');
+                    $isCorrect = strpos($answerText, '#!') === 0 ? 1 : 0;
+                    $answerText = str_replace('#!', '', $answerText);
+
+                    if (!empty($answerText)) {
+                        $q->insertAnswers($lastInsertedId, $answerText, $isCorrect);
+                    }
+                }
+            } elseif ($qtype == 4) {
+                for ($i = 'E'; $i <= 'H'; $i++) {
+                    if (!empty($row[$i])) {
+                        $matchParts = explode('>>', $row[$i]);
+                        if (count($matchParts) == 2) {
+                            $q->insertAnswers($lastInsertedId, trim($matchParts[0]), 1, trim($matchParts[1]));
+                        }
+                    }
+                }
+            } elseif ($qtype == 1) {
+                $isTrue = (strtolower($row['E']) === 'true') ? 1 : 0;
+                $q->updateTF($lastInsertedId, $isTrue);
+            } elseif ($qtype == 2) {
+                for ($i = 'E'; $i <= 'H'; $i++) {
+                    $answerText = trim($row[$i] ?? '');
+                    if (!empty($answerText)) {
+                        $q->insertAnswers($lastInsertedId, $answerText, 1);
+                    }
+                }
+            }
+        }
+
+    } catch (Exception $e) {
+        die("Error reading the file: " . $e->getMessage());
+    }
+
+    header('Location: ../../?questions');
+    exit;
 }
+
+else{
+    http_response_code(404);
+  }
+  
+?>

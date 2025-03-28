@@ -32,7 +32,7 @@
 </div>
 
 <style>
-    .header-overlay {
+     .header-overlay {
         background: rgba(0, 0, 0, 0.3); 
         min-height: 100vh;
     }
@@ -52,7 +52,7 @@
 
     .btn:hover {
         transform: scale(1.05);
-    }
+    } 
 </style>
 
 </div>
@@ -64,7 +64,7 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-backstretch/2.1.18/jquery.backstretch.min.js" integrity="sha256-OZZMwc3o7txR3vFfunl0M9yk3SayGp444eZdL9QDi1Y=" crossorigin="anonymous"></script>	  <script type="text/javascript">
 	  jQuery(document).ready(function(){
-		$.backstretch("photo.jpg");
+		$.backstretch("BackGround/photo.jpg");
 	  });
 	  </script>
 	 <script src="style/js/home.js"></script>

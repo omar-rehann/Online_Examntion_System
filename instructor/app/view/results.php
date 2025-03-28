@@ -120,7 +120,8 @@ $res = new result;
 					</div>
 				</div>
 			</div>
-		<?php }elseif(isset($_GET['id'])){
+		<?php }
+    elseif(isset($_GET['id'])){
 			if(is_numeric($_GET['id'])){
 			$result = $res->getByID($_GET['id']);
 			if(empty($result)){

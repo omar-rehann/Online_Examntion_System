@@ -455,10 +455,10 @@ $_assign = new assign;
                   <?php echo (($questionDetails->difficulty == 1)?'<span class="badge badge-success">Easy</span>':(($questionDetails->difficulty == 2)?'<span class="badge badge-warning">Moderate</span>':'<span class="badge badge-danger">Hard</span>')) ?>
                 </blockquote>
                 <?php if ($questionDetails->type < 4){ ?>
-                <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#question<?php echo $i ?>" aria-expanded="true" aria-controls="collapseOne">
+                <button class="btn  bg-danger text-light" type="button" data-toggle="collapse" data-target="#question<?php echo $i ?>" aria-expanded="true" aria-controls="collapseOne">
                   View Stats
                 </button>
-                <a class="btn btn-link float-right" type="button" href="?questions=view&id=<?php echo $questionDetails->id; ?>">
+                <a class="btn  btn-primary float-right" type="button" href="?questions=view&id=<?php echo $questionDetails->id; ?>">
                   View Question
                 </a>
                 <div id="question<?php echo $i ?>" class="collapse">
