@@ -1,292 +1,482 @@
 <?php
-if (!defined('NotDirectAccess')){
-	die('Direct Access is not allowed to this page');
+if (!defined('NotDirectAccess')) {
+    die('Direct Access is not allowed to this page');
 }
 require_once 'header.php';
 require_once 'navbar.php';
+
 $res = new test;
-	if(isset($_GET['id'])){
-			if($_GET['id'] == 'Last'){
-				$result = $res->getFinishedResult();
-			}else{
-				$result = $res->getMyResult($_GET['id']);
-			}
-			if(empty($result)){
-				header('Location: ?results');
-				exit;
-			}
-			$precent = round(($result->TestDegree != 0)?(($result->FinalGrade / $result->TestDegree) * 100):0);
-			$answers = $res->getResultAnswers($result->id);
+
+if (isset($_GET['id'])) {
+    if ($_GET['id'] == 'Last') {
+        $result = $res->getFinishedResult();
+    } else {
+        $result = $res->getMyResult($_GET['id']);
+    }
+
+    if (empty($result)) {
+        header('Location: ?results');
+        exit;
+    }
+
+    $percent = ($result->TestDegree > 0) ? round(($result->FinalGrade / $result->TestDegree) * 100) : 0;
+    $answers = $res->getResultAnswers($result->id);
 ?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   
+</head>
 <body class="bg-light">
-
-  <div class="container mt-3">
-          <div class="col-md-12">
-						<?php
-						if ($result->releaseResult == 0){
-							echo '<div class="alert alert-warning text-center" role="alert">
-								This Result was not yet released
-							</div>';
-						}else{ ?>
-              <div class="card">
-                  <div class="card-header">
-                      <strong class="card-title">Result - <?php echo $result->testName ?></strong>
-											<button type="button" class="btn btn-outline-primary float-right mb-1" onclick="window.print();return false;">Print Result</button>
-                  </div>
-							<div class="card">
-								<div class="card-body">
-									<?php
-									if($precent >= $result->passPercent){
-										echo '<div class="alert alert-success text-center" role="alert">
-											Congratulation.. Your Have Passed The Test<br>
-											Your Result is: ' . $precent . '%
-										</div>';
-									}elseif($result->Questions == 0){
-										echo '<div class="alert alert-danger text-center" role="alert">
-														This Test Was Not Submitted
-													</div>';
-									}else{
-										echo '<div class="alert alert-danger text-center" role="alert">
-														Unfortunately.. Your did\'t Pass The Test<br>
-														Your Result is: ' . $precent . '%
-													</div>';
-									} ?>
-									<div class="row">
-										<div class="col-6">
-												<label class="control-label mb-1"><strong>Test:  </strong></label>
-												<label class="control-label mb-1"><?php echo $result->testName ?></label>
-										</div>
-										<div class="col-6">
-											<label class="control-label mb-1"><strong>Instructor:  </strong></label>
-											<label class="control-label mb-1"><?php echo $result->Instructor ?></label>
-										</div>
-										<div class="col-6">
-											<label class="control-label mb-1"><strong>Date:  </strong></label>
-											<label class="control-label mb-1"><?php echo date('d-m-Y', strtotime($result->startTime)) ?></label>
-										</div>
-										<div class="col-6">
-											<label class="control-label mb-1"><strong>Duration:  </strong></label>
-											<label class="control-label mb-1"><?php echo $result->resultDuration ?> Minutes</label>
-										</div>
-										<div class="col-6">
-											<label class="control-label mb-1"><strong>Started:  </strong></label>
-											<label class="control-label mb-1"><?php echo date('h:i A', strtotime($result->startTime)) ?></label>
-										</div>
-										<div class="col-6">
-											<label class="control-label mb-1"><strong>Ended:  </strong></label>
-											<label class="control-label mb-1"><?php echo date('h:i A', strtotime($result->endTime)) ?></label>
-										</div>
-
-
-										<div class="col-6">
-											<label class="control-label mb-1"><strong>No. Of Questions:  </strong></label>
-											<label class="control-label mb-1"><span class="badge badge-primary"><?php echo $result->Questions ?></span></label>
-										</div>
-										<div class="col-6">
-											<label class="control-label mb-1"><strong>Test Grade:  </strong></label>
-											<label class="control-label mb-1"><span class="badge badge-primary"><?php echo $result->TestDegree ?></span></label>
-										</div>
-										<div class="col-6">
-											<label class="control-label mb-1"><strong>Correct Questions:  </strong></label>
-											<label class="control-label mb-1"><span class="badge badge-success"><?php echo $result->RightQuestions ?></span></label>
-										</div>
-										<div class="col-6">
-											<label class="control-label mb-1"><strong>Wrong Questions:  </strong></label>
-											<label class="control-label mb-1"><span class="badge badge-danger"><?php echo $result->WrongQuestions ?></span></label>
-										</div>
-										<div class="col-6">
-											<label class="control-label mb-1"><strong>Final<small>Grade</small>:  </strong></label>
-											<label class="control-label mb-1"><span class="badge badge-<?php echo ($result->passPercent < $precent)? 'success':'danger' ?>"><?php echo $result->FinalGrade .' / '.$result->TestDegree ?></span></label>
-										</div>
-										<div class="col-6">
-											<label class="control-label mb-1"><strong>Results<small>(Precent)</small>:  </strong></label>
-											<label class="control-label mb-1"><span class="badge badge-<?php echo ($result->passPercent < $precent)? 'success':'danger' ?>"><?php echo $precent ?>%</span></label>
-										</div>
-									</div>
-								</div>
-              </div>
-							<div class="card-header">
-									<strong class="card-title">Questions</strong>
-							</div>
-							<div class="card-body">
-							<?php
-							$viewAnswers = $res->canViewResults($result->id);
-							if(($viewAnswers == 0) or (($viewAnswers == 1) and (strtotime($result->testEnd) < strtotime("now")))){
-							$types = [0 =>'Multiple Choice',1 =>'True/False',2 =>'Complete',3 =>'Multiple Select',4 =>'Matching',5 =>'Essay'];
-							$I = 0;
-							foreach($answers as $answer){
-								$I++; ?>
-							 <div class="container">
-								<div class="card m-4">
-									<div class="card-body">
-										<?php
-										if($answer->points == 0)
-										echo '<span class="float-right ml-3 badge badge-danger">0 Points</span>';
-										elseif($answer->points > 0)
-										echo '<span class="float-right ml-3 badge badge-success">' .$answer->points. ' Points</span>';
-										else
-										echo '<span class="float-right ml-3 badge badge-warning">Not Yet Reviewed</span>';
-										 ?>
-
-										<span class="float-right ml-3 badge badge-secondary">
-											<?php echo $types[$answer->type] ?>
-										</span>
-										<blockquote class="blockquote">
-                      <?php echo '<span class="badge badge-secondary">' .$I. ') </span>' .$answer->question ?>
-                    </blockquote>
-											<hr>
-										<?php if($answer->type == 4){ ?>
-									<div class="row mt-4">
-										<div class="col-6 text-center" style="font-size:1.2rem">
-											<h5 class="ml-3 text-left">Your Answers</h5>
-											<?php $givenAnswers = $res->getGivenAnswers($result->id,$answer->id);?>
-											<table class="table table-hover">
-													<thead>
-														<tr>
-															<th scope="col">Answer</th>
-															<th scope="col">Correct Match</th>
-															<th scope="col">Points</th>
-														</tr>
-													</thead>
-													<tbody>
-															<?php foreach ($givenAnswers as $ans)
-																echo '<tr class="table-'. (($ans->isCorrect) ? 'success':'danger') .'"><th>' . $ans->answer . '</th><th>' . $ans->textAnswer . '</th><th>+' . $ans->points . '</th></tr>'; ?>
-													</tbody>
-												</table>
-										</div>
-										<div class="col-6 text-center" style="font-size:1.2rem">
-											<h5 class="ml-3 text-left">Correct Answers</h5>
-											<?php $correctAnswers = $res->getCorrectAnswers($answer->id);?>
-											<table class="table table-hover">
-												  <thead>
-												    <tr>
-												      <th scope="col">Answer</th>
-												      <th scope="col">Correct Match</th>
-												    </tr>
-												  </thead>
-												  <tbody>
-															<?php foreach ($correctAnswers as $ans)
-																echo '<tr class="table-success"><th>' . $ans->answer . '</th><th>' . $ans->matchAnswer . '</th></tr>'; ?>
-												  </tbody>
-												</table>
-										</div>
-									</div>
-								<?php }elseif($answer->type == 0 || $answer->type == 3){ ?>
-										<div class="mt-5 ml-5 mr-5">
-											<?php $givenAnswers = $res->getGivenAnswers($result->id,$answer->id);
-											$correctAnswers = $res->getCorrectAnswers($answer->id);?>
-											<h4>Your Answer:</h4>
-											<div class="row">
-											<?php foreach ($givenAnswers as $ans)
-													echo '<div class="col-5 p-3 '. (($ans->isCorrect)?'correctAnswer':'wrongAnswer') .' mr-5">'. $ans->answer .'</div>'; ?>
-												</div>
-											<hr>
-											<?php $rand = rand(10,100); ?>
-											<a class="mt-5" data-toggle="collapse" href="#mcqCorrect<?php echo $rand ?>" role="button" aria-expanded="false" aria-controls="collapseExample">View Correct Answer</a>
-											<div class="collapse" id="mcqCorrect<?php echo $rand ?>">
-											  <div class="mt-4">
-											  <div class="row">
-													<?php foreach ($correctAnswers as $ans)
-															echo '<div class="col-5 p-3 correctAnswer mr-5">'. $ans->answer .'</div>'; ?>
-											  </div>
-											  </div>
-										</div>
-										</div>
-								<?php }elseif($answer->type == 1){
-									$givenAnswers = $res->getGivenAnswers($result->id,$answer->id); ?>
-											<div class="row">
-											<div class="col-6">
-												Your Answer: <span class="badge badge-primary"><?php echo (($givenAnswers[0]->isTrue)?'True':'False'); ?></span>
-											</div>
-											<div class="col-6">
-												Accepted Answer: <span class="badge badge-success"><?php echo (($answer->isTrue)?'True':'False');?></span>
-											</div>
-											</div>
-								<?php }elseif($answer->type == 2){
-									$givenAnswers = $res->getGivenAnswers($result->id,$answer->id);
-									$correctAnswers = $res->getCorrectAnswers($answer->id);?>
-											<div class="row">
-											<div class="col-6">
-												Your Answer: <span class="badge badge-primary"><?php echo $givenAnswers[0]->textAnswer ?></span>
-											</div>
-											<div class="col-6">
-												Accepted Answer: <?php foreach($correctAnswers as $a) echo '<span class="badge badge-primary ml-3">' . $a->answer.'</span>'; ?>
-											</div>
-											</div>
-								<?php }elseif($answer->type == 5){
- 									$givenAnswers = $res->getGivenAnswers($result->id,$answer->id); ?>
-									<div class="form-group">
-								    <label for="essy">Your Answer</label>
-								    <textarea class="form-control" id="essy" rows="4" disabled><?php echo $givenAnswers[0]->textAnswer; ?></textarea>
-								  </div>
-								<?php } ?>
-
-									</div>
-								</div>
-								</div>
-							<?php }}elseif($viewAnswers == 2){
-								echo '<div class="alert alert-warning text-center" role="alert"><p>You can\'t view the answers of this test</p></div>';
-
-						}else{
-							  echo '<div class="alert alert-info text-center" role="alert"><p>Your answers will be available in '. date('d/m/Y h:i A', strtotime($result->testEnd)) .'</p></div>';
-							} ?>
-						</div>
-            </div>
-
-					<?php } ?>
-        </div>
-</div>
-<?php
-}else{
-
-			?>
-        <div class="container mt-3">
-            <div class="animated fadeIn">
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="card">
-                            <div class="card-header">
-                                <strong class="card-title">Results</strong>
+    <div class="container py-4">
+        <div class="col-md-12 mx-auto">
+            <?php if ($result->releaseResult == 0) : ?>
+                <div class="alert alert-warning text-center" role="alert">
+                    <i class="fas fa-exclamation-triangle mr-2"></i> This result has not been released yet
+                </div>
+            <?php else : ?>
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-clipboard-check mr-2"></i>
+                            <span class="font-weight-bold">Test Results - <?php echo htmlspecialchars($result->testName); ?></span>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-primary no-print" onclick="window.print();">
+                            <i class="fas fa-print mr-1"></i> Print
+                        </button>
+                    </div>
+                    
+                    <div class="card-body">
+                        <?php if ($result->Questions == 0) : ?>
+                            <div class="alert alert-danger text-center" role="alert">
+                                <i class="fas fa-times-circle mr-2"></i> This test was not submitted
                             </div>
-														<?php
-														$results = $res->getMyResults();
-														?>
+                        <?php else : ?>
+                            <?php if ($percent >= $result->passPercent) : ?>
+                                <div class="alert alert-success text-center py-3">
+                                    <h4 class="alert-heading mb-3"><i class="fas fa-check-circle mr-2"></i>Congratulations! You passed the test</h4>
+                                    <p class="h4 mb-0">Your score: <?php echo $percent; ?>%</p>
+                                </div>
+                            <?php else : ?>
+                                <div class="alert alert-danger text-center py-3">
+                                    <h4 class="alert-heading mb-3"><i class="fas fa-exclamation-circle mr-2"></i>Sorry, you didn't pass the test</h4>
+                                    <p class="h4 mb-0">Your score: <?php echo $percent; ?>%</p>
+                                </div>
+                            <?php endif; ?>
+                        <?php endif; ?>
+
+                        <!-- Test Information Section -->
+                        <div class="card mb-4 shadow-sm">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0"><i class="fas fa-info-circle mr-2"></i>Test Information</h5>
+                            </div>
                             <div class="card-body">
-                                <table class="table table-striped table-bordered resultTable">
-                                    <thead>
-                                        <tr>
-																					<th>Test</th>
-                                          <th>Date</th>
-                                          <th>Result</th>
-                                          <th>-</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-																			<?php foreach($results as $result){
-																				$precent = round(($result->TestDegree != 0)?(($result->FinalGrade / $result->TestDegree) * 100):0);
-																				?>
-                                        <tr>
-																						<th><?php echo $result->testName ?></th>
-                                            <th><?php echo $result->endTime ?></th>
-                                            <td><?php echo ($result->releaseResult == 1) ? '<span class="badge badge-'. (($precent <= 50) ? "danger" : "success"). '">'. $precent .'%</span>':'<span class="badge badge-warning">Under Review</span>'; ?></td>
-                                            <td>
-																							<?php if ($result->releaseResult == 1){ ?>
-																							<a href="?results&id=<?php echo $result->id ?>" class="btn btn-outline-primary btn-sm"><i class="fa fa-info-circle"></i>Details</a>
-																						<?php } ?>
-																						</td>
-                                        </tr>
-																			<?php } ?>
-                                    </tbody>
-                                </table>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3 pb-2 border-bottom">
+                                            <span class="font-weight-bold text-muted">Test Name:</span>
+                                            <span class="float-right"><?php echo htmlspecialchars($result->testName); ?></span>
+                                        </div>
+                                        <div class="mb-3 pb-2 border-bottom">
+                                            <span class="font-weight-bold text-muted">Instructor:</span>
+                                            <span class="float-right"><?php echo htmlspecialchars($result->Instructor); ?></span>
+                                        </div>
+                                        <div class="mb-3 pb-2 border-bottom">
+                                            <span class="font-weight-bold text-muted">Date:</span>
+                                            <span class="float-right"><?php echo date('m/d/Y', strtotime($result->startTime)); ?></span>
+                                        </div>
+                                        <div class="mb-3 pb-2 border-bottom">
+                                            <span class="font-weight-bold text-muted">Duration:</span>
+                                            <span class="float-right"><?php echo $result->resultDuration; ?> minutes</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3 pb-2 border-bottom">
+                                            <span class="font-weight-bold text-muted">Start Time:</span>
+                                            <span class="float-right"><?php echo date('h:i A', strtotime($result->startTime)); ?></span>
+                                        </div>
+                                        <div class="mb-3 pb-2 border-bottom">
+                                            <span class="font-weight-bold text-muted">End Time:</span>
+                                            <span class="float-right"><?php echo date('h:i A', strtotime($result->endTime)); ?></span>
+                                        </div>
+                                        <div class="mb-3 pb-2 border-bottom">
+                                            <span class="font-weight-bold text-muted">Questions:</span>
+                                            <span class="badge badge-primary float-right"><?php echo $result->Questions; ?></span>
+                                        </div>
+                                        <div class="mb-3 pb-2 border-bottom">
+                                            <span class="font-weight-bold text-muted">Total Points:</span>
+                                            <span class="badge badge-primary float-right"><?php echo $result->TestDegree; ?></span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+
+                        <?php if ($result->Questions > 0) : ?>
+                        <!-- Performance Analysis Section -->
+                        <div class="card mb-4 shadow-sm">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0"><i class="fas fa-chart-pie mr-2"></i>Performance Analysis</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-4">
+                                        <div class="card h-100">
+                                            <div class="card-body text-center">
+                                                <h5 class="card-title">Percentage Score</h5>
+                                                <div class="chart-container">
+                                                    <canvas id="percentChart"></canvas>
+                                                </div>
+                                                <h3 class="mt-3 <?php echo ($percent >= $result->passPercent) ? 'text-success' : 'text-danger'; ?>">
+                                                    <?php echo $percent; ?>%
+                                                </h3>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-4">
+                                        <div class="card h-100">
+                                            <div class="card-body text-center">
+                                                <h5 class="card-title">Final Grade</h5>
+                                                <div class="chart-container">
+                                                    <canvas id="gradeChart"></canvas>
+                                                </div>
+                                                <h3 class="mt-3 <?php echo ($percent >= $result->passPercent) ? 'text-success' : 'text-danger'; ?>">
+                                                    <?php echo $result->FinalGrade; ?>/<?php echo $result->TestDegree; ?>
+                                                </h3>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mt-2">
+                                    <div class="col-md-6">
+                                        <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded">
+                                            <span class="font-weight-bold">Correct Answers:</span>
+                                            <span class="badge badge-success badge-pill py-2 px-3"><?php echo $result->RightQuestions; ?></span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded">
+                                            <span class="font-weight-bold">Wrong Answers:</span>
+                                            <span class="badge badge-danger badge-pill py-2 px-3"><?php echo $result->WrongQuestions; ?></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <?php endif; ?>
+                        
+                        <?php if ($result->Questions > 0) : ?>
+                        <!-- Questions Section -->
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0"><i class="fas fa-question-circle mr-2"></i>Questions and Answers</h5>
+                            </div>
+                            <div class="card-body">
+                                <?php
+                                $viewAnswers = $res->canViewResults($result->id);
+                                if (($viewAnswers == 0) || (($viewAnswers == 1) && (strtotime($result->testEnd) < strtotime("now")))) {
+                                    $types = [0 => 'Multiple Choice', 1 => 'True/False', 2 => 'Fill in Blank', 3 => 'Multiple Select', 4 => 'Matching', 5 => 'Essay'];
+                                    $I = 0;
+                                    foreach ($answers as $answer) {
+                                        $I++;
+                                ?>
+                                        <div class="card mb-4 border">
+                                            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <span class="badge badge-secondary mr-2"><?php echo $I; ?></span>
+                                                    <span><?php echo $types[$answer->type]; ?></span>
+                                                </div>
+                                                <div>
+                                                    <?php if ($answer->points == 0) : ?>
+                                                        <span class="badge badge-danger">0 points</span>
+                                                    <?php elseif ($answer->points > 0) : ?>
+                                                        <span class="badge badge-success">+<?php echo $answer->points; ?> points</span>
+                                                    <?php else : ?>
+                                                        <span class="badge badge-warning">Not graded yet</span>
+                                                    <?php endif; ?>
+                                                </div>
+                                            </div>
+                                            <div class="card-body">
+                                                <h6 class="card-title"><?php echo htmlspecialchars($answer->question); ?></h6>
+                                                <hr>
+                                                
+                                                <?php if ($answer->type == 4) : ?>
+                                                    <!-- Matching Type -->
+                                                    <div class="row mt-3">
+                                                        <div class="col-md-6">
+                                                            <h6>Your Answer:</h6>
+                                                            <?php $givenAnswers = $res->getGivenAnswers($result->id, $answer->id); ?>
+                                                            <table class="table table-sm table-bordered">
+                                                                <thead class="thead-light">
+                                                                    <tr>
+                                                                        <th>Answer</th>
+                                                                        <th>Match</th>
+                                                                        <th>Points</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    <?php foreach ($givenAnswers as $ans) : ?>
+                                                                        <tr class="<?php echo ($ans->isCorrect) ? 'table-success' : 'table-danger'; ?>">
+                                                                            <td><?php echo htmlspecialchars($ans->answer); ?></td>
+                                                                            <td><?php echo htmlspecialchars($ans->textAnswer); ?></td>
+                                                                            <td>+<?php echo $ans->points; ?></td>
+                                                                        </tr>
+                                                                    <?php endforeach; ?>
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <h6>Correct Answer:</h6>
+                                                            <?php $correctAnswers = $res->getCorrectAnswers($answer->id); ?>
+                                                            <table class="table table-sm table-bordered">
+                                                                <thead class="thead-light">
+                                                                    <tr>
+                                                                        <th>Answer</th>
+                                                                        <th>Correct Match</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    <?php foreach ($correctAnswers as $ans) : ?>
+                                                                        <tr class="table-success">
+                                                                            <td><?php echo htmlspecialchars($ans->answer); ?></td>
+                                                                            <td><?php echo htmlspecialchars($ans->matchAnswer); ?></td>
+                                                                        </tr>
+                                                                    <?php endforeach; ?>
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                
+                                                <?php elseif ($answer->type == 0 || $answer->type == 3) : ?>
+                                                    <!-- Multiple Choice / Multiple Select -->
+                                                    <div class="mt-3">
+                                                        <h6>Your Answer:</h6>
+                                                        <?php
+                                                        $givenAnswers = $res->getGivenAnswers($result->id, $answer->id);
+                                                        $correctAnswers = $res->getCorrectAnswers($answer->id);
+                                                        ?>
+                                                        <div class="row">
+                                                            <?php foreach ($givenAnswers as $ans) : ?>
+                                                                <div class="col-md-6 mb-2">
+                                                                    <div class="p-2 rounded <?php echo ($ans->isCorrect) ? 'bg-success text-white' : 'bg-danger text-white'; ?>">
+                                                                        <?php echo htmlspecialchars($ans->answer); ?>
+                                                                    </div>
+                                                                </div>
+                                                            <?php endforeach; ?>
+                                                        </div>
+                                                        
+                                                        <?php $rand = rand(10, 100); ?>
+                                                        <button class="btn btn-sm btn-outline-primary mt-2" type="button" data-toggle="collapse" data-target="#mcqCorrect<?php echo $rand; ?>">
+                                                            <i class="fas fa-eye mr-1"></i>View Correct Answer
+                                                        </button>
+                                                        <div class="collapse mt-2" id="mcqCorrect<?php echo $rand; ?>">
+                                                            <div class="card card-body">
+                                                                <h6>Correct Answer:</h6>
+                                                                <div class="row">
+                                                                    <?php foreach ($correctAnswers as $ans) : ?>
+                                                                        <div class="col-md-6 mb-2">
+                                                                            <div class="p-2 rounded bg-success text-white">
+                                                                                <?php echo htmlspecialchars($ans->answer); ?>
+                                                                            </div>
+                                                                        </div>
+                                                                    <?php endforeach; ?>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                
+                                                <?php elseif ($answer->type == 1) : ?>
+                                                    <!-- True/False -->
+                                                    <?php $givenAnswers = $res->getGivenAnswers($result->id, $answer->id); ?>
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <h6>Your Answer:</h6>
+                                                            <span class="badge <?php echo ($givenAnswers[0]->isTrue == $answer->isTrue) ? 'badge-success' : 'badge-danger'; ?>">
+                                                                <?php echo ($givenAnswers[0]->isTrue) ? 'True' : 'False'; ?>
+                                                            </span>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <h6>Correct Answer:</h6>
+                                                            <span class="badge badge-success">
+                                                                <?php echo ($answer->isTrue) ? 'True' : 'False'; ?>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                
+                                                <?php elseif ($answer->type == 2) : ?>
+                                                    <!-- Fill in Blank -->
+                                                    <?php
+                                                    $givenAnswers = $res->getGivenAnswers($result->id, $answer->id);
+                                                    $correctAnswers = $res->getCorrectAnswers($answer->id);
+                                                    ?>
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <h6>Your Answer:</h6>
+                                                            <div class="p-2 bg-light rounded">
+                                                                <?php echo htmlspecialchars($givenAnswers[0]->textAnswer); ?>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <h6>Correct Answer:</h6>
+                                                            <div>
+                                                                <?php foreach ($correctAnswers as $a) : ?>
+                                                                    <span class="badge badge-success mr-1 mb-1"><?php echo htmlspecialchars($a->answer); ?></span>
+                                                                <?php endforeach; ?>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                
+                                                <?php elseif ($answer->type == 5) : ?>
+                                                    <!-- Essay -->
+                                                    <?php $givenAnswers = $res->getGivenAnswers($result->id, $answer->id); ?>
+                                                    <div>
+                                                        <h6>Your Answer:</h6>
+                                                        <div class="p-2 bg-light rounded">
+                                                            <?php echo nl2br(htmlspecialchars($givenAnswers[0]->textAnswer)); ?>
+                                                        </div>
+                                                    </div>
+                                                <?php endif; ?>
+                                            </div>
+                                        </div>
+                                <?php
+                                    }
+                                } elseif ($viewAnswers == 2) {
+                                    echo '<div class="alert alert-warning text-center" role="alert">
+                                        <i class="fas fa-ban mr-2"></i> You cannot view answers for this test
+                                    </div>';
+                                } else {
+                                    echo '<div class="alert alert-info text-center" role="alert">
+                                        <i class="fas fa-clock mr-2"></i> Your answers will be available on ' . date('m/d/Y h:i A', strtotime($result->testEnd)) . '
+                                    </div>';
+                                }
+                                ?>
+                            </div>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <?php if ($result->Questions > 0) : ?>
+    <script>
+        // Percentage Chart
+        $(document).ready(function() {
+            const percentCtx = document.getElementById('percentChart').getContext('2d');
+            const percentChart = new Chart(percentCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Correct', 'Incorrect'],
+                    datasets: [{
+                        data: [<?php echo $percent; ?>, <?php echo max(0, 100 - $percent); ?>],
+                        backgroundColor: ['#28a745', '#dc3545'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutoutPercentage: 70,
+                    legend: { display: false },
+                    tooltips: { enabled: false },
+                    animation: {
+                        animateScale: true,
+                        animateRotate: true
+                    }
+                }
+            });
+
+            // Grade Chart
+            const gradeCtx = document.getElementById('gradeChart').getContext('2d');
+            const gradeChart = new Chart(gradeCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Your Score', 'Remaining'],
+                    datasets: [{
+                        data: [<?php echo $result->FinalGrade; ?>, <?php echo max(0, $result->TestDegree - $result->FinalGrade); ?>],
+                        backgroundColor: [
+                            '<?php echo ($percent >= $result->passPercent) ? "#28a745" : "#dc3545"; ?>',
+                            '#e9ecef'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutoutPercentage: 70,
+                    legend: { display: false },
+                    tooltips: { enabled: false },
+                    animation: {
+                        animateScale: true,
+                        animateRotate: true
+                    }
+                }
+            });
+        });
+    </script>
+    <?php endif; ?>
+</body>
+</html>
+<?php
+} else {
+    // All results listing page
+    $results = $res->getMyResults();
+?>
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white">
+                        <strong class="card-title"><i class="fas fa-list-alt mr-2"></i>All Results</strong>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-striped table-bordered resultTable">
+                            <thead>
+                                <tr>
+                                    <th>Test</th>
+                                    <th>Date</th>
+                                    <th>Result</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($results as $result) : 
+                                    $percent = ($result->TestDegree > 0) ? round(($result->FinalGrade / $result->TestDegree) * 100) : 0;
+                                ?>
+                                    <tr>
+                                        <td><?php echo htmlspecialchars($result->testName); ?></td>
+                                        <td><?php echo date('m/d/Y', strtotime($result->endTime)); ?></td>
+                                        <td>
+                                            <?php if ($result->releaseResult == 1) : ?>
+                                                <span class="badge badge-<?php echo ($percent >= 50) ? "success" : "danger"; ?>">
+                                                    <?php echo $percent; ?>%
+                                                </span>
+                                            <?php else : ?>
+                                                <span class="badge badge-warning">Under Review</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td>
+                                            <?php if ($result->releaseResult == 1) : ?>
+                                                <a href="?results&id=<?php echo $result->id; ?>" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-info-circle mr-1"></i>Details
+                                                </a>
+                                            <?php endif; ?>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
         </div>
-		<?php } ?>
     </div>
-	<?php
+<?php
+}
+
 define('ContainsDatatables', true);
 require_once 'footer.php';
 ?>
