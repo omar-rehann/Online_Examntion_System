@@ -25,7 +25,12 @@ if (isset($_GET['id'])) {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-   
+    <style>
+        .no-print { display: block; }
+        @media print {
+            .no-print { display: none; }
+        }
+    </style>
 </head>
 <body class="bg-light">
     <div class="container py-4">
@@ -39,7 +44,7 @@ if (isset($_GET['id'])) {
                     <div class="card-header bg-white d-flex justify-content-between align-items-center">
                         <div>
                             <i class="fas fa-clipboard-check mr-2"></i>
-                            <span class="font-weight-bold">Test Results - <?php echo htmlspecialchars($result->testName); ?></span>
+                            <span class="font-weight-bold">Test Results - <?php echo strip_tags(htmlspecialchars_decode($result->testName)); ?></span>
                         </div>
                         <button type="button" class="btn btn-sm btn-primary no-print" onclick="window.print();">
                             <i class="fas fa-print mr-1"></i> Print
@@ -75,11 +80,11 @@ if (isset($_GET['id'])) {
                                     <div class="col-md-6">
                                         <div class="mb-3 pb-2 border-bottom">
                                             <span class="font-weight-bold text-muted">Test Name:</span>
-                                            <span class="float-right"><?php echo htmlspecialchars($result->testName); ?></span>
+                                            <span class="float-right"><?php echo strip_tags(htmlspecialchars_decode($result->testName)); ?></span>
                                         </div>
                                         <div class="mb-3 pb-2 border-bottom">
                                             <span class="font-weight-bold text-muted">Instructor:</span>
-                                            <span class="float-right"><?php echo htmlspecialchars($result->Instructor); ?></span>
+                                            <span class="float-right"><?php echo strip_tags(htmlspecialchars_decode($result->Instructor)); ?></span>
                                         </div>
                                         <div class="mb-3 pb-2 border-bottom">
                                             <span class="font-weight-bold text-muted">Date:</span>
@@ -198,7 +203,7 @@ if (isset($_GET['id'])) {
                                                 </div>
                                             </div>
                                             <div class="card-body">
-                                                <h6 class="card-title"><?php echo htmlspecialchars($answer->question); ?></h6>
+                                                <h6 class="card-title"><?php echo strip_tags(htmlspecialchars_decode($answer->question)); ?></h6>
                                                 <hr>
                                                 
                                                 <?php if ($answer->type == 4) : ?>
@@ -218,8 +223,8 @@ if (isset($_GET['id'])) {
                                                                 <tbody>
                                                                     <?php foreach ($givenAnswers as $ans) : ?>
                                                                         <tr class="<?php echo ($ans->isCorrect) ? 'table-success' : 'table-danger'; ?>">
-                                                                            <td><?php echo htmlspecialchars($ans->answer); ?></td>
-                                                                            <td><?php echo htmlspecialchars($ans->textAnswer); ?></td>
+                                                                            <td><?php echo strip_tags(htmlspecialchars_decode($ans->answer)); ?></td>
+                                                                            <td><?php echo strip_tags(htmlspecialchars_decode($ans->textAnswer)); ?></td>
                                                                             <td>+<?php echo $ans->points; ?></td>
                                                                         </tr>
                                                                     <?php endforeach; ?>
@@ -239,8 +244,8 @@ if (isset($_GET['id'])) {
                                                                 <tbody>
                                                                     <?php foreach ($correctAnswers as $ans) : ?>
                                                                         <tr class="table-success">
-                                                                            <td><?php echo htmlspecialchars($ans->answer); ?></td>
-                                                                            <td><?php echo htmlspecialchars($ans->matchAnswer); ?></td>
+                                                                            <td><?php echo strip_tags(htmlspecialchars_decode($ans->answer)); ?></td>
+                                                                            <td><?php echo strip_tags(htmlspecialchars_decode($ans->matchAnswer)); ?></td>
                                                                         </tr>
                                                                     <?php endforeach; ?>
                                                                 </tbody>
@@ -260,7 +265,7 @@ if (isset($_GET['id'])) {
                                                             <?php foreach ($givenAnswers as $ans) : ?>
                                                                 <div class="col-md-6 mb-2">
                                                                     <div class="p-2 rounded <?php echo ($ans->isCorrect) ? 'bg-success text-white' : 'bg-danger text-white'; ?>">
-                                                                        <?php echo htmlspecialchars($ans->answer); ?>
+                                                                        <?php echo strip_tags(htmlspecialchars_decode($ans->answer)); ?>
                                                                     </div>
                                                                 </div>
                                                             <?php endforeach; ?>
@@ -277,7 +282,7 @@ if (isset($_GET['id'])) {
                                                                     <?php foreach ($correctAnswers as $ans) : ?>
                                                                         <div class="col-md-6 mb-2">
                                                                             <div class="p-2 rounded bg-success text-white">
-                                                                                <?php echo htmlspecialchars($ans->answer); ?>
+                                                                                <?php echo strip_tags(htmlspecialchars_decode($ans->answer)); ?>
                                                                             </div>
                                                                         </div>
                                                                     <?php endforeach; ?>
@@ -314,14 +319,14 @@ if (isset($_GET['id'])) {
                                                         <div class="col-md-6">
                                                             <h6>Your Answer:</h6>
                                                             <div class="p-2 bg-light rounded">
-                                                                <?php echo htmlspecialchars($givenAnswers[0]->textAnswer); ?>
+                                                                <?php echo strip_tags(htmlspecialchars_decode($givenAnswers[0]->textAnswer)); ?>
                                                             </div>
                                                         </div>
                                                         <div class="col-md-6">
                                                             <h6>Correct Answer:</h6>
                                                             <div>
                                                                 <?php foreach ($correctAnswers as $a) : ?>
-                                                                    <span class="badge badge-success mr-1 mb-1"><?php echo htmlspecialchars($a->answer); ?></span>
+                                                                    <span class="badge badge-success mr-1 mb-1"><?php echo strip_tags(htmlspecialchars_decode($a->answer)); ?></span>
                                                                 <?php endforeach; ?>
                                                             </div>
                                                         </div>
@@ -333,7 +338,7 @@ if (isset($_GET['id'])) {
                                                     <div>
                                                         <h6>Your Answer:</h6>
                                                         <div class="p-2 bg-light rounded">
-                                                            <?php echo nl2br(htmlspecialchars($givenAnswers[0]->textAnswer)); ?>
+                                                            <?php echo nl2br(strip_tags(htmlspecialchars_decode($givenAnswers[0]->textAnswer))); ?>
                                                         </div>
                                                     </div>
                                                 <?php endif; ?>
@@ -447,7 +452,7 @@ if (isset($_GET['id'])) {
                                     $percent = ($result->TestDegree > 0) ? round(($result->FinalGrade / $result->TestDegree) * 100) : 0;
                                 ?>
                                     <tr>
-                                        <td><?php echo htmlspecialchars($result->testName); ?></td>
+                                        <td><?php echo strip_tags(htmlspecialchars_decode($result->testName)); ?></td>
                                         <td><?php echo date('m/d/Y', strtotime($result->endTime)); ?></td>
                                         <td>
                                             <?php if ($result->releaseResult == 1) : ?>
