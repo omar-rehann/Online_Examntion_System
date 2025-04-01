@@ -53,29 +53,6 @@ class result extends dbh{
           $result=$stmt->fetchAll(PDO::FETCH_OBJ);
           return $result;
     }
-    public function getAllByLink($linkID){
-        $stmt = $this->connect()->prepare("SELECT r.id,r.testID,t.name AS testName,s.name AS studentName,r.studentID,r.startTime,r.endTime,
-                             (select name from student where id = r.studentID) AS student,ipaddr,hostname,
-                                getResultGrade(r.id) AS FinalGrade,
-                                getResultMaxGrade(r.id) TestDegree
-                                 FROM result r
-                                 INNER JOIN test t
-                                    ON t.id = r.testID
-                                 INNER JOIN student s
-                                    ON s.id = r.studentID
-                                 WHERE t.instructorID = :aid
-                                 and !r.isTemp
-                                 and t.id = (select testID from test_invitations ti where ti.id = :linkID)
-                                 and r.settingID = (select settingID from test_invitations ti where ti.id = :linkID)
-                                 and getResultMaxGrade(r.id) > 0
-                                 group by t.id, r.id
-                                 order by r.endTime DESC;");
-          $stmt->bindparam(":linkID",$linkID);
-          $stmt->bindparam(":aid",$_SESSION['mydata']->id);
-          $stmt->execute();
-          $result=$stmt->fetchAll(PDO::FETCH_OBJ);
-          return $result;
-    }
     public function getTestResults($testID){
         $stmt = $this->connect()->prepare("SELECT r.id,r.testID,t.name AS testName,s.name AS studentName,r.studentID,r.startTime,r.endTime,
                              (select name from student where id = r.studentID) AS student,ipaddr,hostname,

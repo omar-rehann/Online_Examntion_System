@@ -22,47 +22,6 @@ if ($_GET['action'] == 'login'){
 }else{
   echo 'Your ID or password is not correct!';
 }
-}else if ($_GET['action'] == 'register'){
-  $id = !empty($_POST['id']) ? trim($_POST['id']) : null;
-  $email = !empty($_POST['email']) ? trim($_POST['email']) : null;
-  $phone = !empty($_POST['phone']) ? trim($_POST['phone']) : null;
-  $pass = !empty($_POST['password']) ? trim($_POST['password']) : null;
-  $hashedpwd = md5($pass);
-  $_student = new student();
-  if (strlen($pass) < 8)
-    echo "Password too short!";
-  elseif($email == null)
-    echo 'Email can\'t be empty';
-  elseif($pass == null)
-    echo 'Password can\'t be empty';
-  elseif(strlen($phone) != 11)
-    echo 'Phone Number is not valid';
-  elseif ($_student->checkEmail($email))
-    echo 'Email Already Used';
-  elseif ($_student->checkPhone($phone))
-    echo 'Phone Number is already registered';
-  elseif (!preg_match("#[0-9]+#", $pass))
-    echo "Password must include at least one number!";
-  elseif(!preg_match("#[a-zA-Z]+#", $pass))
-    echo "Password must include at least one letter!";
-  else{
-  $_student->register($id,$hashedpwd,$email,$phone);
-    echo 'success';
-}
-}else if ($_GET['action'] == 'checkID'){
-  $id = !empty($_POST['id']) ? trim($_POST['id']) : null;
-  $_student = new student();
-  $status = $_student->checkIDforRegister($id);
-  if (!$status){
-    echo 'ID doesn\'t exist in our system';
-  }else{
-    if($status->nullpass == 0){
-      echo 'ID is already registered, Try to recover your account';
-    }else{
-      echo 'success';
-    }
-  }
-
 }else if ($_GET['action'] == 'requestReset'){
     $email = !empty($_POST['email']) ? trim($_POST['email']) : null;
     $_student = new student();
@@ -74,8 +33,7 @@ if ($_GET['action'] == 'login'){
       echo 'Email Address is not Registered';
     }
 
-}
-else if ($_GET['action'] == 'resetPasswordWithToken'){
+}else if ($_GET['action'] == 'resetPasswordWithToken'){
     $token = !empty($_POST['token']) ? trim($_POST['token']) : null;
     $email = !empty($_POST['email']) ? trim($_POST['email']) : null;
     $pass = !empty($_POST['password']) ? trim($_POST['password']) : null;

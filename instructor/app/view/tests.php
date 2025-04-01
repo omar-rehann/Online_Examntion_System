@@ -76,7 +76,7 @@ $_assign = new assign;
   <?php }elseif (($_GET['tests'] == "model") && (isset($_GET['id']))) {
     $res = new result;
     $tes = new test;
-    $rep = new report;
+     $rep = new report;
     $questions = $rep->getQuestionsInTest($_GET['id']);
     $types = [0 =>'Multiple Choice',1 =>'True/False',2 =>'Complete',3 =>'Multiple Select',4 =>'Matching',5 =>'Essay'];
     ?>

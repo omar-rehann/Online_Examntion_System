@@ -1,9 +1,9 @@
 <?php
 class dbh {
   private $host = "localhost";
-  private $port = "3306"; // أو 3307 حسب إعدادات XAMPP
+  private $port = "3306"; 
   private $username = "root";
-  private $pwd = ""; // تأكد من أنها فارغة إذا لم يكن هناك كلمة مرور
+  private $pwd = ""; 
   private $dbName = "final";
 
   public function connect(){

@@ -9,7 +9,8 @@
     <title>ONLINE EXAM SYSTEM</title>
     <link rel="icon" href="favicon.ico">
 	<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-    <link rel="stylesheet" href="style/css/style.css">
+    <link rel="stylesheet" href="style/css/shape.css">
+
 </head>
 
 <body>
@@ -31,29 +32,6 @@
     </div>
 </div>
 
-<style>
-     .header-overlay {
-        background: rgba(0, 0, 0, 0.3); 
-        min-height: 100vh;
-    }
-    
-    .header-box {
-        background: rgba(0, 0, 0, 0.1);
-        border-radius: 10px;
-        padding: 30px;
-        max-width: 100%;
-        box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
-    }
-
-    .btn {
-        transition: 0.3s;
-        font-size: 18px;
-    }
-
-    .btn:hover {
-        transform: scale(1.05);
-    } 
-</style>
 
 </div>
 

@@ -84,7 +84,7 @@ class test extends dbh
     }
 
     public function getTestInvitations($testID){
-        $stmt = $this->connect()->prepare("SELECT ti.id,name,HEX(AES_ENCRYPT(id, 'O6U')) as invite,
+        $stmt = $this->connect()->prepare("SELECT ti.id,name,HEX(AES_ENCRYPT(id, 'final')) as invite,
                 CASE
                 WHEN ((convert_tz(now(),@@session.time_zone,'+02:00') between ts.startTime AND ts.endTime) and useLimit > used) THEN
                   1

@@ -1,8 +1,5 @@
 <?php
 require_once 'dbh.class.php';
-//require_once $_SERVER['DOCUMENT_ROOT'] . '/student/app/controller/function.php';
-//include_once '../student/app/contoller/function.php';
-
 class test extends dbh{
 
   function getMyTests(){
@@ -53,26 +50,6 @@ class test extends dbh{
       $result=$stmt->fetchAll(PDO::FETCH_OBJ);
       return $result[0];
   }
-  function getTestByCode($code){
-      $stmt = $this->connect()->prepare("SELECT t.id,t.name,c.name course,
-        i.name instructor,ts.endTime,ti.settingID,ts.prevQuestion,
-        ts.passPercent,ts.duration,ts.random,ts.startTime,ts.sendToStudent,ts.releaseResult,null groupID,
-        getQuestionsInTest(t.id) questions from test_invitations ti
-              inner join test t
-              on t.id = ti.testID
-              LEFT join test_settings ts
-              on ts.id = ti.settingID
-              inner join course c
-              on c.id = t.courseID
-              inner join instructor i
-              on i.id = t.instructorID
-        			where ti.id = AES_DECRYPT(UNHEX(:code), 'O6U');");
-      $stmt->bindparam(":code",$code);
-      $stmt->execute();
-      $result=$stmt->fetchAll(PDO::FETCH_OBJ);
-      return $result[0];
-  }
-
   public function checkTestTaken(){
       $stmt = $this->connect()->prepare("SELECT id FROM result where testID = :testID AND studentID = :studentID");
       $stmt->bindparam(":testID",$_SESSION['CurrentTest']->id);
@@ -85,7 +62,6 @@ class test extends dbh{
               return false;
       }
     }
-
     function getActiveTest(){
         $stmt = $this->connect()->prepare("SELECT t.id,t.name,ts.passPercent,ts.endTime,ts.duration,ts.viewAnswers,ts.prevQuestion,
     		getQuestionsInTest(t.id) as questions,
@@ -387,39 +363,8 @@ function getQuestionMatches($qid){
        $result=$stmt->fetchAll(PDO::FETCH_OBJ);
        return $result[0]->viewAnswers;
        }
-   public function checkCode($code){
-       $stmt = $this->connect()->prepare("SELECT id from test_invitations where id =  AES_DECRYPT(UNHEX(:code), 'O6U') and used < useLimit");
-       $stmt->bindparam(":code",$code);
-       $stmt->execute();
-       $result=$stmt->rowCount();
-       if($result > 0){
-               return true;
-       }else{
-               return false;
-       }
-     }
-
-   public function checktestStatus($code){
-       $stmt = $this->connect()->prepare("SELECT (CASE WHEN (convert_tz(now(),@@session.time_zone,'+02:00') BETWEEN ts.startTime AND ts.endTime) THEN
-            		1
-            	ELSE
-            		0
-            END) AS status
-            from test_invitations ti
-            inner join test_settings ts
-            on ts.id = ti.settingID where ti.id = AES_DECRYPT(UNHEX(:code), 'O6U')");
-       $stmt->bindparam(":code",$code);
-       $stmt->execute();
-       $result=$stmt->fetchAll(PDO::FETCH_OBJ);
-       if(!empty($result))
-          return $result[0]->status;
-       else
-          return 0;
-     }
-
-
-     public function testAlreadyTaken($code){
-         $stmt = $this->connect()->prepare("SELECT * from result where testID = (SELECT testID from test_invitations where id = AES_DECRYPT(UNHEX(:code), 'O6U')) AND StudentID = :studID");
+      public function testAlreadyTaken($code){
+         $stmt = $this->connect()->prepare("SELECT * from result where testID = (SELECT testID from test_invitations where id = AES_DECRYPT(UNHEX(:code), 'final')) AND StudentID = :studID");
          $stmt->bindparam(":code",$code);
          $stmt->bindparam(":studID",$_SESSION['student']->id);
          $stmt->execute();

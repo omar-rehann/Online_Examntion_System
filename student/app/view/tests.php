@@ -46,11 +46,12 @@ if(isset($_GET['resume'])){
 <?php
 define('ContainsPagination', true);
 
-}elseif((!empty($_GET['id']) || !empty($_GET['code'])) && isset($_GET['start'])){
+} elseif (!empty($_GET['id']) && isset($_GET['start'])) {
     require_once 'navbar.php';
-    $myTest = (isset($_GET['code']) ? $_test->getTestByCode($_GET['code']) : $_test->getTest($_GET['id']));
-    if (empty($myTest)){
-        header('Location: ?tests'); exit;
+    $myTest = $_test->getTest($_GET['id']); // يتم استخدام الـ ID فقط
+    if (empty($myTest)) {
+        header('Location: ?tests'); 
+        exit;
     }
     $_SESSION['CurrentTest'] = $myTest;
 ?>

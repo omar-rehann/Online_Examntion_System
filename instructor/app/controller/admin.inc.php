@@ -19,15 +19,6 @@ header('Location: ' . $_SERVER['HTTP_REFERER']);
   $_admin = new admin();
   $_admin->activateInstructor($_GET['activateInstructor']);
   header('Location: ' . $_SERVER['HTTP_REFERER']);
-}else if (isset($_GET['createInvites'])){
-  $count = !empty($_POST['count']) ? trim($_POST['count']) : null;
-  $_admin = new admin();
-  $_admin->generateInvitations($count);
-  header('Location: ' . $_SERVER['HTTP_REFERER']);
-}else if (isset($_GET['clearInvites'])){
-  $_admin = new admin();
-  $_admin->deleteInvitations();
-  header('Location: ' . $_SERVER['HTTP_REFERER']);
 }else if (isset($_GET['addStudent'])){
 
   $id = is_numeric($_POST['studentID']) ? $_POST['studentID'] : null;

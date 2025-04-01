@@ -28,9 +28,6 @@ $allGroups = $group->getAll($_SESSION['mydata']->id);
 									<i class="fa fa-plus"></i> Add Students
 								</button>
 
-							<!-- Removed the invitations table -->
-							<!-- Removed the modal for generating codes -->
-
 							<div class="modal fade" id="addstudent" tabindex="-1" role="dialog">
 							  <div class="modal-dialog" role="document">
 							    <div class="modal-content">
@@ -357,4 +354,4 @@ $allGroups = $group->getAll($_SESSION['mydata']->id);
   <?php
 		define('ContainsDatatables', true);
 		require_once 'footer.php';
-		?>
+?>

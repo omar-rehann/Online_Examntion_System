@@ -18,8 +18,6 @@ if ($_GET['action'] == 'getQuestions'){
     echo 'You have already taken this test';
   }elseif($_test->checkActiveTest() != 0){
     echo 'You have an active test.., You can\'t take more then one test at the same time';
-  }elseif(!$_test->checktestStatus($_POST['code']) AND $_POST['code'] != 0){
-    echo 'The Test is not Opened now!';
   }else{
   $_test->InitiateTest();
   if($_SESSION['CurrentTest']->random == 1){

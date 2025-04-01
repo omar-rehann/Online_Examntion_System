@@ -169,15 +169,4 @@ class instructor extends dbh{
                         return 0;
                 }
             }
-              public function isValidInvite($code){
-                $stmt = $this->connect()->prepare("SELECT * FROM instructor_invitations WHERE code = :code");
-                $stmt->bindparam(":code",$code);
-                $stmt->execute();
-                $result = $stmt->rowCount();
-                if($result > 0){
-                        return true;
-                }else{
-                        return false;
-                }
-            }
 }

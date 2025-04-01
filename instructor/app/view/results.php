@@ -322,7 +322,7 @@ $res = new result;
                             </div>
                             <hr>
 														<?php $rand = rand(10,100); ?>
-                            <a class="mt-5" data-toggle="collapse" href="#mcqCorrect<?php echo $rand ?>" role="button" aria-expanded="false" aria-controls="collapseExample">View Correct Answer</a>
+                            <a class="mt-5 bg-dark text-light p-2 rounded text-decoration-none" data-toggle="collapse" href="#mcqCorrect<?php echo $rand ?>" role="button" aria-expanded="false" aria-controls="collapseExample">View Correct Answer</a>
                             <div class="collapse" id="mcqCorrect<?php echo $rand ?>">
                               <div class="mt-4">
                                 <div class="row">
@@ -380,9 +380,7 @@ $res = new result;
 			$_admin = new admin;
 			$_student = new student;
 			$res = new result;
-			if(isset($_GET['code'])){
-				$results = $res->getAllByLink($_GET['code']);
-			}elseif(isset($_GET['studentID']) and $_SESSION['mydata']->isAdmin){
+			if(isset($_GET['studentID']) and $_SESSION['mydata']->isAdmin){
 				$results = $_admin->getStudentResults($_GET['studentID']);
 			}elseif(isset($_GET['studentID']) and !$_SESSION['mydata']->isAdmin){
 				$results = $_student->getStudentResults($_GET['studentID']);

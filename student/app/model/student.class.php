@@ -14,17 +14,6 @@ class student extends dbh {
               return false;
       }
     }
-  public function checkIDforRegister($id){
-      $stmt = $this->connect()->prepare("SELECT id,(CASE WHEN password is null || password = '' then 1 ELSE 0 END) nullpass from student where id = :id;");
-      $stmt->bindparam(":id",$id);
-      $stmt->execute();
-      $result=$stmt->fetchAll(PDO::FETCH_OBJ);
-      if(!empty($result)){
-        return $result[0];
-      }else{
-        return false;
-      }
-    }
     public function checkSession($id)
       {
           $session = session_id();
@@ -47,28 +36,6 @@ class student extends dbh {
          $stmt->bindparam(":sessionID",$session);
          $stmt->execute();
       }
-    public function register($id,$password,$email,$phone)
-     {
-      try
-        {
-           $stmt = $this->connect()->prepare("UPDATE student
-             SET email = :email,
-             phone = :phone,
-             password = :password
-             WHERE id = :id");
-           $stmt->bindparam(":id",$id);
-           $stmt->bindparam(":password",$password);
-           $stmt->bindparam(":email",$email);
-           $stmt->bindparam(":phone",$phone);
-           $stmt->execute();
-           return true;
-        }
-      catch(PDOException $e)
-        {
-           echo $e->getMessage();
-           return false;
-        }
-     }
 
      public function checkEmail($email){
          $stmt = $this->connect()->prepare("SELECT id FROM student where email = :email");

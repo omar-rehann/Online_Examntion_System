@@ -201,7 +201,6 @@ require_once 'navbar.php';
   </div>
   <!-- .content -->
   </div>
-  <!-- /#right-panel -->
   <?php
 		define('ContainsDatatables', true);
         require_once 'footer.php';

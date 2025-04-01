@@ -42,18 +42,6 @@ class group extends dbh{
         $result = $stmt->fetchAll(PDO::FETCH_OBJ);
         return $result;
     }
-    public function getInvitations($groupID){
-        $stmt = $this->connect()->prepare("SELECT (SELECT name from groups where id = :groupID) as name,groupID,code from group_invitations where groupID = :groupID");
-        $stmt->bindparam(":groupID",$groupID);
-        $stmt->execute();
-        $result = $stmt->fetchAll(PDO::FETCH_OBJ);
-        return $result;
-    }
-    public function deleteOneInvite($code){
-        $stmt = $this->connect()->prepare("DELETE FROM group_invitations where code = :code");
-        $stmt->bindparam(":code",$code);
-        $stmt->execute();
-    }
     public function delete($id){
         $stmt = $this->connect()->prepare("DELETE FROM groups WHERE id = :gID and instructorID = :instID");
         $stmt->bindparam(":gID",$id);

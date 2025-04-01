@@ -46,8 +46,6 @@ require_once 'header.php';
 			<div class="group">
 				<input type="submit" class="button" value="Sign In">
 			</div>
-			<div class="copy-text text-center"><a style="color:white;text-decoration: none;" href="?register">New Student?</a></div>
-
 		</form>
 		<form class="for-pwd-htm" id="requestResetForm" action="app/controller/student.inc.php?action=requestReset" method="post">
 			<div class="group">
