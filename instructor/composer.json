@@ -1,6 +1,21 @@
 {
+    "name": "omar_rehan/online_exam_system",
+    "description": "An online exam platform for creating and managing quizzes and tests.",
+    "autoload": {
+        "psr-4": {
+            "OmarRehan\\OnlineExamSystem\\": "src/"
+        }
+    },
+    "authors": [{
+        "name": "Omar Rehan",
+        "email": "omarrehan724@gmail.com"
+    }],
+    "minimum-stability": "stable",
     "require": {
         "phpoffice/phpspreadsheet": "^1.11",
         "phpmailer/phpmailer": "^6.1"
+    },
+    "config": {
+        "optimize-autoloader": true
     }
 }
