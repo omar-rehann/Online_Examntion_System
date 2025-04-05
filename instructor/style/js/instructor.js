@@ -199,41 +199,6 @@ function customConfirm(lnk, conf, succ) {
         })
 
     });
-
-    $("#createVoucherform").submit(function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        var form = $(this);
-        var url = form.attr('action');
-        var posting = $.post(url, $("#createVoucherform").serialize(), function(data) {}).done(function(msg) {
-            if (msg.startsWith('http')) {
-                (async() => {
-                    const { value: text } = await Swal.fire({
-                        icon: 'success',
-                        title: 'Link Created Successfully',
-                        text: "Use the link below to give access to test",
-                        input: 'text',
-                        inputValue: msg,
-                        onClose: () => {
-                            $(location).attr('href', '?tests');
-                        }
-                    })
-
-                })()
-            } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Oops...',
-                    text: 'Something Wrong Happened',
-                    footer: msg
-                })
-            }
-
-
-        })
-
-    });
-
     $('#RandomRules').on('click', '.deleteCrsQuestions', function(e) {
         e.preventDefault();
         var li = $(this).closest("li");
@@ -728,13 +693,6 @@ $(function() {
                 }
             }
 
-            /**
-             * adds text to circle
-             *
-             * @param obj
-             * @param cssClass
-             * @param lineHeight
-             */
             function addCircleText(obj, cssClass, lineHeight) {
                 $("<span></span>")
                     .appendTo(obj)
@@ -747,12 +705,6 @@ $(function() {
                     });
             }
 
-            /**
-             * adds info text to circle
-             *
-             * @param obj
-             * @param factor
-             */
             function addInfoText(obj, factor) {
                 $('<span></span>')
                     .appendTo(obj)
@@ -763,10 +715,6 @@ $(function() {
                     .text(info);
             }
 
-            /**
-             * checks which data attributes are defined
-             * @param obj
-             */
             function checkDataAttributes(obj) {
                 $.each(customSettings, function(index, attribute) {
                     if (obj.data(attribute) != undefined) {
@@ -781,10 +729,6 @@ $(function() {
                 });
             }
 
-            /**
-             * animate foreground circle
-             * @param current
-             */
             function animate(current) {
 
                 context.clearRect(0, 0, canvas.width, canvas.height);
